@@ -181,7 +181,7 @@ class MutableInt(Integral):
     def to_bytes(self, length, byteorder, signed=False):
         return self.__value.to_bytes(length, byteorder, signed=False)
         
-    def from_bytes(self, bytes, byteorder, signed=False)
+    def from_bytes(self, bytes, byteorder, signed=False):
         return __class__(int.from_bytes(bytes, byteorder, signed=False))
         
     def as_integer_ratio(self):
