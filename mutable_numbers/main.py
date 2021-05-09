@@ -2,14 +2,32 @@ from numbers import *
 import math
 from copy import deepcopy
 
-class MutableInt(Integral):
+class MutableComplex(Number):
+    def __init__(self, x):
+        raise NotImplementedError('work in progress feature')
+
+
+
+class MutableFloat(MutableComplex):
+    def __init__(self, x):
+        raise NotImplementedError('work in progress feature')
+
+
+
+class MutableRational(MutableFloat):
+    def __init__(self, x):
+        raise NotImplementedError('work in progress feature')
+
+
+  
+class MutableInt(Integral): # Will be subclassed by MutableRational later
     """Mutable version of Python's bulit-in int type"""
     
-    def __init__(self, x=0):
+    def __init__(self, x=0, *args):
         if type(x) == __class__:
             return x.copy()
         
-        self.__value = int(x)
+        self.__value = int(x, *args)
     
     
     
@@ -187,6 +205,8 @@ class MutableInt(Integral):
     def as_integer_ratio(self):
         return (self.copy(), __class__(1))
     
+    
+    
     # Other methods
     
     def copy(self):
@@ -244,22 +264,31 @@ class MutableInt(Integral):
         self -= value
         return self
         
+    def iter_bits(self, start=None, stop=None, step=None):
+        return reversed([bool(int(i)) for i in '{:b}'.format(self.__value)[start:stop:step]])
+        
     def __getitem__(self, key):
-        return int('{:b}'.format(self.__value)[::-1][key][::-1], 2)
+        return __class__('{:b}'.format(self.__value)[::-1][key][::-1], 2)
         
     def __setitem__(self, key, value):
-        length = max(0, (key.stop - key.start + (key.step - (1 if key.step > 0 else -1))) // key.step)
+        if type(key) == int:
+            key = slice(key)
         
-        if value < 0:
-            value = (1 << length) - abs(value)
+        self_data = list(self.iter_bits())
         
-        data = list(map(bool, '{:b}'.format(self.__value)[::-1]))
-        data[key] = list(map(bool, '{:b}'.format(self.__value).zfill(length)[::-1]))
-        self.__value = int('{:b}'.format(''.join(data))[::-1], 2)
+        length = len(range(*key.indices(self.bit_length())))
+        value_data = list(reversed([bool(int(i)) for i in '{:b}'.format(int(value)).zfill(length)]))
+        
+        self_data[key] = value_data
+        self_data.reverse()
+        self.__value = int(''.join([str(int(i)) for i in self_data]), 2)
         return self
         
     def __delitem__(self, key):
-        data = list(map(bool, '{:b}'.format(self.__value)[::-1]))
-        data[key] = []
-        self.__value = int('{:b}'.format(''.join(data))[::-1], 2)
+        self_data = self.iter_bits()
+        
+        self_data[key] = []
+        
+        self_data.reverse()
+        self.__value = int(''.join([str(int(i)) for i in self_data]), 2)
         return self
