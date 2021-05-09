@@ -277,7 +277,11 @@ class MutableInt(Integral): # Will be subclassed by MutableRational later
         self_data = list(self.iter_bits())
         
         length = len(range(*key.indices(self.bit_length())))
-        value_data = list(reversed([bool(int(i)) for i in '{:b}'.format(int(value)).zfill(length)]))
+        
+        if isinstance(value_data, Number):
+            value_data = list(reversed([bool(int(i)) for i in '{:b}'.format(int(value)).zfill(length)]))
+        else:
+            value_data = list(value_data)
         
         self_data[key] = value_data
         self_data.reverse()
