@@ -245,7 +245,7 @@ class MutableInt(Integral):
         return self
         
     def __getitem__(self, key):
-        return int('{:b}'.format(self.__value)[::-1][key], 2)
+        return int('{:b}'.format(self.__value)[::-1][key][::-1], 2)
         
     def __setitem__(self, key, value):
         length = max(0, (key.stop - key.start + (key.step - (1 if key.step > 0 else -1))) // key.step)
