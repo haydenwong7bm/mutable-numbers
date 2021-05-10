@@ -267,25 +267,41 @@ class MutableInt(Integral): # Will be subclassed by MutableRational later
     def iter_bits(self, start=None, stop=None, step=None):
         return reversed([bool(int(i)) for i in '{:b}'.format(self.__value)[start:stop:step]])
         
+    def iter_set(self):
+        returned = []
+        value = abs(self.__value)
+        n = 0
+        while value:
+            if value & 1:
+                returned.append(n)
+            n += 1
+            value >> 1
+        
+        return iter(returned)
+        
     def __getitem__(self, key):
         return __class__('{:b}'.format(self.__value)[::-1][key][::-1], 2)
         
     def __setitem__(self, key, value):
         if type(key) == int:
-            key = slice(key)
-        
-        self_data = list(self.iter_bits())
-        
-        length = len(range(*key.indices(self.bit_length())))
-        
-        if isinstance(value_data, Number):
-            value_data = list(reversed([bool(int(i)) for i in '{:b}'.format(int(value)).zfill(length)]))
+            start, stop, step = key, key+1, 1
         else:
-            value_data = list(value_data)
+            start, stop, step = key.indices(self.bit_length())
         
-        self_data[key] = value_data
-        self_data.reverse()
-        self.__value = int(''.join([str(int(i)) for i in self_data]), 2)
+        length = len(range(start, stop, step))
+        
+        if step == 1: #Optimization
+            self.__value = (self.__value & ~(((1 << length) - 1) << start)) | (value << start)
+        else:
+            self_data = list(self.iter_bits())
+            if isinstance(value, Number):
+                value_data = list(reversed([bool(int(i)) for i in '{:b}'.format(int(value)).zfill(length)]))
+            else:
+                value_data = list(value_data)
+            self_data[key] = value_data
+            self_data.reverse()
+            self.__value = int(''.join([str(int(i)) for i in self_data]), 2)
+        
         return self
         
     def __delitem__(self, key):
